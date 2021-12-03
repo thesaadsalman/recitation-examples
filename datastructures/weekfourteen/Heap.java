@@ -5,46 +5,55 @@ import java.util.*;
 public class Heap {
 
   /**
-   * Motivating example: We are looking for a new monitor to buy. The
+   * Motivating example: We are looking for a new Present to buy. The
    * four features we are interested in is its price, diagonal length,
-   * xPixels, and yPixels of the monitor.
+   * xPixels, and yPixels of the Present.
    */
 
   /**
    * Basic Binary Heap class
    * @param heap Array where our values are stored
    */
-
-  public List<Monitor> heap;
+  public List<Present> heap;
 
   /**
   * Constructor for a new Heap
-  * @param heap a List of monitors, not necessarily a heap
   */
   public Heap () {
     this.heap = new ArrayList<>();
   }
 
   /**
-  * Adds a new monitor to the heap, taking care of reheapification
-  * @param monitor The monitor we are adding to our heap
+  * Adds a new Present to the heap, taking care of reheapification
+  * @param Present The Present we are adding to our heap
   */
-  public void add(Monitor monitor) {
-    // Append a monitor to the end of the list
-    monitor.addIndex(this.heap.size());
-    this.heap.add(monitor);
+  public void add(Present Present) {
+    // Append a Present to the end of the list
+    Present.addIndex(this.heap.size());
+    this.heap.add(Present);
 
-    // New monitor has been added, need to bubble up the monitor
+    // New Present has been added, need to bubble up the Present
     this.bubbleUp(this.heap.size() - 1);
   }
 
-  public Monitor pop() {
-    Monitor root = this.heap.get(0);
+  /**
+   * Retrieves and removes the root node from the heap, then reheapifies to get the next top node
+   * @return The root (highest priority) node
+   */
+  public Present pop() {
+    // Get the top node
+    Present root = this.heap.get(0);
+
+    // Swap the root node and the "last" node in the heap
     this.heap.set(0, this.heap.get(this.heap.size() - 1));
+
+    // Removes the last node in the heap
     this.heap.remove(this.heap.size() - 1);
 
+    // Bubble the new "root" down to its correct position in the heap, thus "reheapifying"
     this.bubbleDown(0);
 
+    // Returns our highest priority node
     return root;
   }
 
@@ -61,23 +70,24 @@ public class Heap {
     // Get the parent index of this current child
     int parentIndex = this.getParentIndex(index);
 
-    // Get the parent and current Monitors
-    Monitor parentMonitor = this.heap.get(parentIndex);
-    Monitor childMonitor = this.heap.get(index);
+    // Get the parent and current Presents
+    Present parentPresent = this.heap.get(parentIndex);
+    Present childPresent = this.heap.get(index);
 
-    // Compare the parent and current Monitors and if the
+    // Compare the parent and current Presents and if the
     // priority of the child is higher...
-    if (childMonitor.compareTo(parentMonitor) > 0) {
+    if (childPresent.compareTo(parentPresent) < 0) {
+      heap.set(index, parentPresent);
+      heap.set(parentIndex, childPresent);
       // ...swap the parent and the current!
-      this.heap.set(index, parentMonitor);
-      this.heap.set(parentIndex, childMonitor);
-
-      // Reheapify on the *parentIndex* since we just swapped our
-      // current Monitor to the parentIndex
       this.bubbleUp(parentIndex);
     }
   }
 
+  /**
+   * Bubbles a node at a given index down to its correct position in the heap
+   * @param index The index of the node we are bubbling down
+   */
   public void bubbleDown(int index) {
     // Base Case: Our node ahs made it to the end of the heap, nowhere
     // to bubble down
@@ -85,14 +95,14 @@ public class Heap {
       return;
     }
 
-    // Get the indices of possible children
+    // Get the indices of where potential children could be
     int leftChildIndex = this.getChildIndex(index, 'L');
     int rightChildIndex = this.getChildIndex(index, 'R');
 
-    // Get the Children Monitors, or null if their index is invalid
-    Monitor parentMonitor = this.heap.get(index);
-    Monitor leftChild = (leftChildIndex < this.heap.size()) ? this.heap.get(leftChildIndex) : null;
-    Monitor rightChild = (rightChildIndex < this.heap.size()) ? this.heap.get(rightChildIndex) : null;
+    // Get the Children Presents, or null if their index is invalid
+    Present parentPresent = this.heap.get(index);
+    Present leftChild = (leftChildIndex < this.heap.size()) ? this.heap.get(leftChildIndex) : null;
+    Present rightChild = (rightChildIndex < this.heap.size()) ? this.heap.get(rightChildIndex) : null;
 
     // If both children are null, we are done
     if (leftChild == null && rightChild == null) {
@@ -100,33 +110,27 @@ public class Heap {
     }
     // If left child is null, then swap with the right node
     if (leftChild == null) {
-      if (rightChild.compareTo(parentMonitor) > 0) {
-        this.heap.set(rightChildIndex, parentMonitor);
-        this.heap.set(index, rightChild);
-      }
+      this.reheapifyDown(parentPresent, rightChild, index, rightChildIndex);
       return;
     }
     // If right child is null, then swap with the left node
     if (rightChild == null) {
-      if (leftChild.compareTo(parentMonitor) > 0) {
-        this.heap.set(leftChildIndex, parentMonitor);
-        this.heap.set(index, leftChild);
-      }
+      this.reheapifyDown(parentPresent, leftChild, index, leftChildIndex);
       return;
     }
     // Otherwise, compare and swap with greater child
-    if (leftChild.compareTo(rightChild) > 0) {
-      if (leftChild.compareTo(parentMonitor) > 0) {
-        this.heap.set(leftChildIndex, parentMonitor);
-        this.heap.set(index, leftChild);
-        this.bubbleDown(leftChildIndex);
-      }
+    if (leftChild.compareTo(rightChild) < 0) {
+      this.reheapifyDown(parentPresent, leftChild, index, leftChildIndex);
     } else {
-      if (rightChild.compareTo(parentMonitor) > 0) {
-        this.heap.set(rightChildIndex, parentMonitor);
-        this.heap.set(index, rightChild);
-        this.bubbleDown(rightChildIndex);
-      }
+      this.reheapifyDown(parentPresent, rightChild, index, rightChildIndex);
+    }
+  }
+
+  private void reheapifyDown(Present parent, Present child, int parentIndex, int childIndex) {
+    if (child.compareTo(parent) < 0) {
+      this.heap.set(childIndex, parent);
+      this.heap.set(parentIndex, child);
+      this.bubbleDown(childIndex);
     }
   }
 
